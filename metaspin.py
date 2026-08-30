@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Reescribe un video como MOV con la estructura de unas Ray-Ban Meta.
+"""Rewrites a video as a MOV carrying Ray-Ban Meta capture structure.
 
-Los atomos se arman desde cero, no se copian de un archivo de referencia.
+Atoms are built from spec, never copied from a reference file.
 """
 
 import json
@@ -286,7 +286,7 @@ def probe(path):
            "-show_streams", "-select_streams", "v:0", path]
     info = json.loads(subprocess.check_output(cmd).decode("utf-8"))
     if not info.get("streams"):
-        raise SystemExit("Ese archivo no tiene pista de video.")
+        raise SystemExit("That file has no video track.")
     return info["streams"][0]
 
 
@@ -348,7 +348,7 @@ def convert(path_in, out_dir):
 
 def main():
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
-        print("Falta ffmpeg. Revisa el README para instalarlo.")
+        print("ffmpeg not found. See the README for install instructions.")
         return 1
 
     here = os.path.dirname(os.path.abspath(__file__))
@@ -364,24 +364,24 @@ def main():
                         if f.lower().endswith(exts) and not f.startswith("."))
 
     if not videos:
-        print("No encontre videos en la carpeta entrada.")
+        print("No videos found in the input folder.")
         return 1
 
-    print("Videos a convertir: %d\n" % len(videos))
+    print("Videos to convert: %d\n" % len(videos))
     for path in videos:
         print("  " + os.path.basename(path))
         try:
             out, audio, already = convert(path, out_dir)
         except subprocess.CalledProcessError:
-            print("     fallo al codificar, lo salto\n")
+            print("     encoding failed, skipping\n")
             continue
         if not audio:
-            print("     aviso: no tiene audio, los lentes siempre graban con audio")
+            print("     note: no audio track, the glasses always record with audio")
         if already:
-            print("     la fuente ya venia en BT.2020 HLG, no se reconvirtio el color")
-        print("     listo -> " + os.path.basename(out) + "\n")
+            print("     source was already BT.2020 HLG, color left untouched")
+        print("     done -> " + os.path.basename(out) + "\n")
 
-    print("Todo en: " + out_dir)
+    print("Output folder: " + out_dir)
     return 0
 
 

@@ -1,9 +1,9 @@
 #!/bin/bash
-# Doble clic aqui para convertir todo lo que este en la carpeta "entrada".
+# Double click to convert everything sitting in the "entrada" folder.
 
 cd "$(dirname "$0")" || exit 1
 
-# Rutas donde queda ffmpeg si se instalo sin Homebrew
+# Where ffmpeg lands when installed without Homebrew
 export PATH="/usr/local/bin:/opt/homebrew/bin:/opt/local/bin:$PATH"
 
 echo ""
@@ -11,41 +11,41 @@ echo "  metaspin"
 echo ""
 
 if ! command -v python3 >/dev/null 2>&1; then
-  echo "  Falta Python."
+  echo "  Python is missing."
   echo ""
-  echo "  Abre la app Terminal y pega esto:"
+  echo "  Open Terminal and paste this:"
   echo "      xcode-select --install"
   echo ""
-  echo "  Sale una ventana de instalacion. Cuando termine,"
-  echo "  vuelve aqui y da doble clic otra vez."
+  echo "  An installer window appears. When it finishes,"
+  echo "  come back and double click again."
   echo ""
-  read -n 1 -s -r -p "  Presiona cualquier tecla para cerrar."
+  read -n 1 -s -r -p "  Press any key to close."
   exit 1
 fi
 
 if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
-  echo "  Falta ffmpeg."
+  echo "  ffmpeg is missing."
   echo ""
-  echo "  Bajalo de:  https://ffmpeg.martin-riedl.de"
-  echo "  Elige tu Mac (Apple Silicon o Intel) y usa el instalador,"
-  echo "  que viene firmado por Apple y no da problemas."
+  echo "  Get it from:  https://ffmpeg.martin-riedl.de"
+  echo "  Pick your Mac (Apple Silicon or Intel) and use the installer,"
+  echo "  which is signed by Apple and installs cleanly."
   echo ""
-  echo "  Necesitas ffmpeg y tambien ffprobe."
+  echo "  You need both ffmpeg and ffprobe."
   echo ""
-  read -n 1 -s -r -p "  Presiona cualquier tecla para cerrar."
+  read -n 1 -s -r -p "  Press any key to close."
   exit 1
 fi
 
 mkdir -p entrada salida
 
 if [ -z "$(ls -A entrada 2>/dev/null | grep -v '^\.')" ]; then
-  echo "  La carpeta \"entrada\" esta vacia."
+  echo "  The \"entrada\" folder is empty."
   echo ""
-  echo "  Arrastra ahi los videos que quieras convertir"
-  echo "  y da doble clic aqui otra vez."
+  echo "  Drop the videos you want to convert in there"
+  echo "  and double click here again."
   echo ""
   open entrada
-  read -n 1 -s -r -p "  Presiona cualquier tecla para cerrar."
+  read -n 1 -s -r -p "  Press any key to close."
   exit 0
 fi
 
@@ -56,5 +56,5 @@ echo ""
 if [ $STATUS -eq 0 ]; then
   open salida
 fi
-read -n 1 -s -r -p "  Presiona cualquier tecla para cerrar."
+read -n 1 -s -r -p "  Press any key to close."
 echo ""

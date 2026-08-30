@@ -1,62 +1,64 @@
 # metaspin
 
-Convierte cualquier video en un archivo `.MOV` con la misma estructura QuickTime
-que producen unas Ray-Ban Meta Smart Glasses 2, para que Instagram lo trate como
-si hubiera sido grabado con ellas.
+*[Español](README.es.md)*
 
-No necesitas tener los lentes. Todos los átomos se generan desde especificación,
-así que no viaja ningún número de serie ni identificador de nadie.
+Rewrites any video into a `.MOV` carrying the same QuickTime structure that
+Ray-Ban Meta Smart Glasses 2 produce, so Instagram treats it as glasses footage
+and enables Spin View.
+
+You do not need the glasses. Every atom is generated from spec, so no serial
+number or device identifier from anyone else travels inside your files.
 
 ---
 
-## Qué se descubrió
+## What was found
 
-Instagram decide si un video es "de lentes Meta" leyendo la estructura del
-archivo, no los píxeles. Se probaron cuatro enfoques:
+Instagram decides whether a video came from Meta glasses by reading the file
+structure, not the pixels. Four approaches were tested against a real account:
 
-| Prueba | Qué se hizo | Resultado |
+| Test | Approach | Result |
 |---|---|---|
-| A | Solo agregar la metadata Meta | falla |
-| B | Metadata + reducir a dos pistas | falla |
-| C | Metadata + clonar códec, resolución y color | falla |
-| D | Reconstruir la estructura QuickTime completa | **funciona** |
+| A | Add the Meta metadata tags only | fails |
+| B | Metadata plus reducing to two tracks | fails |
+| C | Metadata plus matching codec, resolution and color | fails |
+| D | Rebuild the full QuickTime structure | **works** |
 
-La prueba D se confirmó con dos fuentes distintas: un video de iPhone y un MP4
-H.264 editado sin relación con Meta. El origen del material no importa.
+Test D was confirmed on two unrelated sources: an iPhone HDR recording and an
+edited H.264 MP4. Where the footage came from does not matter.
 
-Comparando un archivo D que funcionó contra una grabación real de los lentes
-salió algo útil: se diferenciaban en seis puntos estructurales y aun así
-Instagram lo aceptó. Es decir, la verificación es más laxa de lo que parecía.
-Esta herramienta genera solo lo que ambos archivos comparten.
+Comparing a working D file against a genuine glasses recording turned up
+something more useful. **They differed in six structural points and Instagram
+accepted it anyway.** The check is far looser than a strict structural clone.
+This tool generates only what both files share.
 
-### Lo que se reproduce
+### Reproduced
 
-- Contenedor QuickTime, marca `qt  `, orden `ftyp` / `wide` / `mdat` / `moov`
-- Átomo `meta` colgando directo de `moov`, no dentro de `udta`
-- Metadata `com.apple.quicktime.*` con los valores de los lentes
-- Handlers `Core Media Video`, `Core Media Audio` y `Core Media Data Handler`
-- Átomo `tapt` con `clef`, `prof` y `enof`
-- HEVC Main con etiqueta `hvc1` a 1376 × 1840, 30 fps
-- Timescale de película 48000 y de video 600
-- `colr` nclc 9/18/9, o sea BT.2020 con transferencia HLG
-- AAC LC a 48 kHz estéreo
-- Exactamente dos pistas
+- QuickTime container, `qt  ` brand, `ftyp` / `wide` / `mdat` / `moov` order
+- `meta` atom as a direct child of `moov`, not nested inside `udta`
+- `com.apple.quicktime.*` metadata with the device values
+- `Core Media Video`, `Core Media Audio` and `Core Media Data Handler` handlers
+- `tapt` atom with `clef`, `prof` and `enof`
+- HEVC Main tagged `hvc1` at 1376 x 1840, 30 fps
+- Movie timescale 48000, video timescale 600
+- `colr` nclc 9/18/9, meaning BT.2020 with HLG transfer
+- AAC LC at 48 kHz stereo
+- Exactly two tracks
 
-### Lo que se descartó
+### Ruled out
 
-El átomo `amve` aparecía marcado como posible disparador. No lo es: la grabación
-real de los lentes no lo tiene, y un archivo que sí lo tenía funcionó igual.
-Lo mismo pasa con `chrm`, `sgpd`, `sbgp`, `cslg` y el orden de los átomos dentro
-de `stbl`.
+The `amve` atom was suspected of being the trigger. It is not: the genuine
+glasses recording does not contain it, and a file that did contain it worked
+anyway. The same goes for `chrm`, `sgpd`, `sbgp`, `cslg`, and atom ordering
+inside `stbl`.
 
 ---
 
-## Instalación
+## Install
 
 ### 1. Python
 
-macOS ya lo trae en cuanto instalas las herramientas de línea de comandos de
-Apple. Si el programa te dice que falta, abre Terminal y pega:
+macOS ships it once Apple's command line tools are installed. If the program
+says it is missing, open Terminal and run:
 
 ```
 xcode-select --install
@@ -64,88 +66,76 @@ xcode-select --install
 
 ### 2. ffmpeg
 
-Descárgalo de [ffmpeg.martin-riedl.de](https://ffmpeg.martin-riedl.de). Elige tu
-tipo de Mac y usa el instalador, que viene firmado y notarizado por Apple.
-Necesitas los dos programas: `ffmpeg` y `ffprobe`.
+Download it from [ffmpeg.martin-riedl.de](https://ffmpeg.martin-riedl.de). Pick
+your Mac type and use the installer, which is signed and notarized by Apple, so
+Gatekeeper will not fight you. You need both `ffmpeg` and `ffprobe`.
 
-### 3. Esta herramienta
+### 3. This tool
 
 ```
 git clone https://github.com/loui89/metaspin.git
 cd metaspin
 ```
 
-Descargar el ZIP desde la web también funciona, pero macOS marca en cuarentena
-todo lo que viene de un ZIP y tendrás que autorizar el archivo a mano. Con
-`git clone` no pasa.
+Downloading the ZIP works too, but macOS quarantines anything that arrives that
+way and strips the executable bit. Cloning avoids both problems.
 
 ---
 
-## Uso
+## Use
 
-**Con doble clic:** arrastra tus videos a la carpeta `entrada` y da doble clic a
-`Convertir.command`. Los resultados salen en `salida`.
+Drop your videos into the `entrada` folder and double click `Convertir.command`.
+Results land in `salida`.
 
-La primera vez macOS puede poner dos peros, los dos de una sola vez:
-
-Abre Terminal y pega estas dos líneas, ajustando la ruta a donde tengas la
-carpeta. La forma fácil de escribir la ruta es arrastrar el archivo desde el
-Finder a la ventana de Terminal:
+If you downloaded the ZIP instead of cloning, macOS will raise two objections.
+Fix both at once, adjusting the path to wherever your folder is. The easy way to
+type a path is to drag the file from Finder into the Terminal window:
 
 ```
-chmod +x /ruta/a/metaspin/Convertir.command
-xattr -d com.apple.quarantine /ruta/a/metaspin/Convertir.command
+chmod +x /path/to/metaspin/Convertir.command
+xattr -d com.apple.quarantine /path/to/metaspin/Convertir.command
 ```
 
-La primera devuelve el permiso de ejecución, que se pierde al descargar un ZIP.
-La segunda quita la marca de cuarentena que macOS le pone a todo lo que viene de
-internet. Ninguna responde nada si salió bien.
+The first restores the executable bit lost during ZIP extraction. The second
+removes the quarantine flag macOS attaches to downloads. Neither prints anything
+on success.
 
-Si clonaste con `git clone` en vez de descargar el ZIP, no necesitas ninguna de
-las dos.
+### Skipping the launcher
 
-### Si prefieres no usar el doble clic
-
-Funciona igual corriendo el programa directo, y así te ahorras todo lo anterior:
+Running the script directly works just as well and avoids all of the above:
 
 ```
-python3 /ruta/a/metaspin/metaspin.py
-```
-
-**Desde Terminal:**
-
-```
-python3 metaspin.py                          # convierte la carpeta entrada
-python3 metaspin.py video.mp4 ./salida       # convierte un archivo suelto
+python3 metaspin.py                       # convert the entrada folder
+python3 metaspin.py clip.mp4 ./salida     # convert a single file
 ```
 
 ---
 
-## Cómo pasarlo al teléfono
+## Getting it onto your phone
 
-El archivo se rompe si pasa por un servicio que lo reescriba.
+The file breaks if it passes through anything that rewrites it.
 
-1. AirDrop del `.MOV` al iPhone. **No** por WhatsApp, Telegram ni Drive.
-2. Guardar en Fotos.
-3. Subir a Instagram normal.
+1. AirDrop the `.MOV` to your iPhone. **Not** WhatsApp, Telegram or Drive.
+2. Save to Photos.
+3. Post to Instagram normally.
 
 ---
 
-## Notas
+## Notes
 
-- El video se recorta a 1376 × 1840 vertical, que es lo que graban los lentes.
-  Si tu fuente es horizontal vas a perder los lados.
-- Si tu fuente ya viene en BT.2020 HLG, como un iPhone grabando en HDR, no se
-  reconvierte el color. Convertir dos veces aplana el contraste.
-- La metadata original de tu video, incluida la ubicación GPS, se elimina.
-- Cada archivo lleva un identificador nuevo generado al momento.
-- La duración es libre. No hay límite de ocho segundos.
+- Video is cropped to 1376 x 1840 vertical, matching what the glasses record.
+  Landscape sources will lose their sides.
+- If your source is already BT.2020 HLG, such as an iPhone shooting HDR, the
+  color is left alone. Converting twice flattens contrast.
+- All original metadata is stripped, GPS coordinates included.
+- Each output carries a freshly generated identifier.
+- Duration is unconstrained. There is no eight second limit.
 
-## Aviso
+## Disclaimer
 
-Esto documenta el comportamiento de un producto de terceros. Instagram puede
-cambiarlo cuando quiera y dejar de funcionar sin previo aviso.
+This documents the observed behavior of a third party product. Instagram can
+change it at any time and this may stop working without notice.
 
-## Licencia
+## License
 
 MIT

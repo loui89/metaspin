@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-"""
-metaspin - convierte un video normal en un MOV con la estructura QuickTime
-que producen unas Ray-Ban Meta Smart Glasses 2.
+"""Reescribe un video como MOV con la estructura de unas Ray-Ban Meta.
 
-Todos los atomos se generan desde especificacion. No se copia ningun archivo
-de referencia, asi que no viaja ningun numero de serie ni identificador ajeno.
+Los atomos se arman desde cero, no se copian de un archivo de referencia.
 """
 
 import json
@@ -15,8 +12,6 @@ import subprocess
 import sys
 import uuid
 from datetime import datetime, timezone
-
-# --- perfil de captura de los lentes -----------------------------------------
 
 WIDTH = 1376
 HEIGHT = 1840
@@ -33,14 +28,11 @@ AUDIO_HANDLER = "Core Media Audio"
 DATA_HANDLER = "Core Media Data Handler"
 
 
-# --- utilidades de atomos ----------------------------------------------------
-
 def atom(kind, payload):
     return struct.pack(">I", 8 + len(payload)) + kind + payload
 
 
 def parse(data, start=0, end=None):
-    """Devuelve [(tipo, inicio, tamano, inicio_payload)] de un nivel."""
     if end is None:
         end = len(data)
     out = []
@@ -73,8 +65,6 @@ def pascal(text):
     return bytes([len(raw)]) + raw
 
 
-# --- constructores de atomos -------------------------------------------------
-
 def make_tapt(width, height):
     def dims(kind):
         return atom(kind, struct.pack(">III", 0, width << 16, height << 16))
@@ -90,11 +80,8 @@ def make_hdlr(component_type, subtype, name):
 
 
 def make_meta(created):
-    """moov/meta al estilo Apple: hdlr mdta + keys + ilst.
-
-    Ojo: en QuickTime el atomo meta NO lleva version/flags, sus hijos
-    empiezan justo despues de la cabecera de 8 bytes.
-    """
+    # En QuickTime el meta no lleva version/flags. Los hijos arrancan justo
+    # despues de los 8 bytes de cabecera, al reves que en MP4.
     hdlr = atom(b"hdlr", struct.pack(">I", 0) + struct.pack(">I", 0)
                 + b"mdta" + b"\x00" * 12 + b"\x00\x00")
 
@@ -123,8 +110,6 @@ def make_meta(created):
 
     return atom(b"meta", hdlr + keys + ilst)
 
-
-# --- reescritura del moov ----------------------------------------------------
 
 def rescale(value, old_ts, new_ts):
     return int(round(value * new_ts / float(old_ts)))
@@ -183,8 +168,7 @@ COMPRESSOR_NAME = "'hvc1'"
 
 
 def patch_stsd(blob):
-    """Reescribe el compressorname del hvc1. ffmpeg pone el nombre del
-    codificador; los lentes ponen 'hvc1'."""
+    # ffmpeg deja aqui el nombre del codificador. Los lentes ponen 'hvc1'.
     body = bytearray(blob)
     for kind, start, size, payload in parse(bytes(body), 16, len(body)):
         if kind != b"hvc1":
@@ -297,8 +281,6 @@ def restructure(path_in, path_out, created):
     open(path_out, "wb").write(out)
 
 
-# --- etapa de codificacion ---------------------------------------------------
-
 def probe(path):
     cmd = ["ffprobe", "-v", "error", "-print_format", "json",
            "-show_streams", "-select_streams", "v:0", path]
@@ -309,7 +291,7 @@ def probe(path):
 
 
 def build_filters(stream):
-    """Solo convierte color si la fuente no esta ya en BT.2020 HLG."""
+    # Convertir dos veces aplana el contraste, asi que primero se revisa.
     chain = ("scale=%d:%d:force_original_aspect_ratio=increase,"
              "crop=%d:%d,fps=%d,format=yuv420p"
              % (WIDTH, HEIGHT, WIDTH, HEIGHT, FPS))
@@ -351,8 +333,6 @@ def has_audio_stream(path):
     info = json.loads(subprocess.check_output(cmd).decode("utf-8"))
     return bool(info.get("streams"))
 
-
-# --- interfaz ----------------------------------------------------------------
 
 def convert(path_in, out_dir):
     name = os.path.splitext(os.path.basename(path_in))[0]

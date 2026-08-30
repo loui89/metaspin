@@ -3,12 +3,11 @@
 
 cd "$(dirname "$0")" || exit 1
 
-# Lugares donde suele quedar ffmpeg cuando se instala sin Homebrew
+# Rutas donde queda ffmpeg si se instalo sin Homebrew
 export PATH="/usr/local/bin:/opt/homebrew/bin:/opt/local/bin:$PATH"
 
 echo ""
 echo "  metaspin"
-echo "  ────────────────────────────────────────────"
 echo ""
 
 if ! command -v python3 >/dev/null 2>&1; then
